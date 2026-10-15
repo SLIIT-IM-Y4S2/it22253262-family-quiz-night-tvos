@@ -1,6 +1,6 @@
 //
 //  asantvosUITests.swift
-//  asantvosUITests
+//  Family Quiz Night – UI tests (driven with the Siri Remote)
 //
 //  Created by Asan M A M (IT22253262) on 2026-10-15.
 //
@@ -8,34 +8,38 @@
 import XCTest
 
 final class asantvosUITests: XCTestCase {
+    private var app: XCUIApplication!
+    private let remote = XCUIRemote.shared
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        app = XCUIApplication()
+        app.launch()
     }
 
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
+    func testPlayOpensPlayerSetup() throws {
+        XCTAssertTrue(app.buttons["playButton"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["playButton"].hasFocus, "Play should be focused first")
+        remote.press(.select)
+        XCTAssertTrue(app.staticTexts["Who's playing?"].waitForExistence(timeout: 3))
+    }
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+    @MainActor
+    func testReachCategoryScreen() throws {
+        remote.press(.select)                                  // Play
+        XCTAssertTrue(app.buttons["continueButton"].waitForExistence(timeout: 3))
+        // Move focus down to the Continue button and press it.
+        for _ in 0..<4 where !app.buttons["continueButton"].hasFocus {
+            remote.press(.down)
+            if !app.buttons["continueButton"].hasFocus { remote.press(.right) }
+        }
+        remote.press(.select)
+        XCTAssertTrue(app.staticTexts["Pick a category"].waitForExistence(timeout: 3))
     }
 
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
